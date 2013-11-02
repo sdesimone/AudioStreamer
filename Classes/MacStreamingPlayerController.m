@@ -29,7 +29,7 @@
 
 - (void)awakeFromNib
 {
-	[downloadSourceField setStringValue:@"http://192.168.1.2/~matt/inside.m4a"];
+  [NSApp activateIgnoringOtherApps:YES];
 }
 
 //
@@ -53,7 +53,7 @@
 	else
 	{
 		[button setImage:image];
-		
+
 		if ([button.image isEqual:[NSImage imageNamed:@"loadingbutton"]])
 		{
 			[self spinButton];
@@ -76,9 +76,8 @@
 			object:streamer];
 		[progressUpdateTimer invalidate];
 		progressUpdateTimer = nil;
-		
+
 		[streamer stop];
-		[streamer release];
 		streamer = nil;
 	}
 }
@@ -96,19 +95,18 @@
 	}
 
 	[self destroyStreamer];
-	
+
 	NSString *escapedValue =
-		[(NSString *)CFURLCreateStringByAddingPercentEscapes(
+		(__bridge_transfer NSString *)CFURLCreateStringByAddingPercentEscapes(
 			nil,
-			(CFStringRef)[downloadSourceField stringValue],
+			(__bridge CFStringRef)[downloadSourceField stringValue],
 			NULL,
 			NULL,
-			kCFStringEncodingUTF8)
-		autorelease];
+            kCFStringEncodingUTF8);
 
 	NSURL *url = [NSURL URLWithString:escapedValue];
-	streamer = [[AudioStreamer alloc] initWithURL:url];
-	
+	streamer = [AudioStreamer streamWithURL:url];
+
 	progressUpdateTimer =
 		[NSTimer
 			scheduledTimerWithTimeInterval:0.1
@@ -186,7 +184,7 @@
 	if ([button.image isEqual:[NSImage imageNamed:@"playbutton"]])
 	{
 		[downloadSourceField resignFirstResponder];
-		
+
 		[self createStreamer];
 		[self setButtonImage:[NSImage imageNamed:@"loadingbutton"]];
 		[streamer start];
@@ -213,7 +211,7 @@
 	{
 		[self setButtonImage:[NSImage imageNamed:@"stopbutton"]];
 	}
-	else if ([streamer isIdle])
+	else if ([streamer isDone])
 	{
 		[self destroyStreamer];
 		[self setButtonImage:[NSImage imageNamed:@"playbutton"]];
@@ -230,9 +228,10 @@
 //
 - (IBAction)sliderMoved:(NSSlider *)aSlider
 {
-	if (streamer.duration)
+  double duration;
+	if ([streamer duration:&duration])
 	{
-		double newSeekTime = ([aSlider doubleValue] / 100.0) * streamer.duration;
+		double newSeekTime = ([aSlider doubleValue] / 100.0) * duration;
 		[streamer seekToTime:newSeekTime];
 	}
 }
@@ -245,12 +244,13 @@
 //
 - (void)updateProgress:(NSTimer *)updatedTimer
 {
-	if (streamer.bitRate != 0.0)
+  double bitrate;
+	if ([streamer calculatedBitRate:&bitrate])
 	{
-		double progress = streamer.progress;
-		double duration = streamer.duration;
-		
-		if (duration > 0)
+		double progress;
+		double duration;
+
+		if ([streamer progress:&progress] && [streamer duration:&duration])
 		{
 			[positionLabel setStringValue:
 				[NSString stringWithFormat:@"Time Played: %.1f/%.1f seconds",
@@ -300,7 +300,6 @@
 		[progressUpdateTimer invalidate];
 		progressUpdateTimer = nil;
 	}
-	[super dealloc];
 }
 
 @end
