@@ -498,6 +498,18 @@ struct queued_packet;
 - (BOOL) seekToTime:(double)newSeekTime;
 
 /**
+ * Seek to a relative time in the audio stream
+ *
+ * This will calculate the current stream progress and seek relative to it
+ * by the specified delta. Useful for seeking.
+ *
+ * @param seekTimeDelta the time interval from current seek time to seek to
+ * @return YES if the stream will be seeking, or NO if the stream did not have
+ *         enough information available to it to seek to the specified time.
+ */
+- (BOOL) seekByDelta:(double)seekTimeDelta;
+
+/**
  * Calculates the bit rate of the stream
  *
  * All packets received so far contribute to the calculation of the bit rate.

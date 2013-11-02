@@ -396,6 +396,16 @@ static void ASReadStreamCallBack(CFReadStreamRef aStream, CFStreamEventType even
   return ret;
 }
 
+//-- SDS
+- (BOOL) seekByDelta:(double)seekTimeDelta {
+    
+    double p = 0;
+    if ([self progress:&p]) {
+        return [self seekToTime:p + seekTimeDelta];
+    }
+    return NO;
+}
+
 - (BOOL) progress:(double*)ret {
   double sampleRate = asbd.mSampleRate;
   if (state_ == AS_STOPPED) {
