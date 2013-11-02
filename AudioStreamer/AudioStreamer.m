@@ -1147,7 +1147,7 @@ static void ASReadStreamCallBack(CFReadStreamRef aStream, CFStreamEventType even
 
   // copy data to the audio queue buffer
   AudioQueueBufferRef buf = buffers[fillBufferIndex];
-  memcpy(buf->mAudioData + bytesFilled, data, packetSize);
+  memcpy(buf->mAudioData + bytesFilled, data, (unsigned long)packetSize);
 
   // fill out packet description to pass to enqueue() later on
   packetDescs[packetsFilled] = *desc;
