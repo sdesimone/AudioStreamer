@@ -396,14 +396,12 @@ static void ASReadStreamCallBack(CFReadStreamRef aStream, CFStreamEventType even
   return ret;
 }
 
-//-- SDS
 - (BOOL) seekByDelta:(double)seekTimeDelta {
     
     double p = 0;
     if ([self progress:&p]) {
         return [self seekToTime:p + seekTimeDelta];
     }
-    NSLog(@"COULD NOT SEEK");
     return NO;
 }
 
