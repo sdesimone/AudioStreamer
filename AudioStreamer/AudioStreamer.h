@@ -559,4 +559,24 @@ struct queued_packet;
  */
 - (BOOL) progress:(double*)ret;
 
+/**
+ * Fade in playback
+ *
+ * The AudioQueue volume is progressively increased from 0 to 1
+ *
+ * @param duration a double which represents the fade-in time span.
+ * @return nothing.
+ */
+- (void) fadeInDuration:(double)duration;
+
+/**
+ * Fade out playback
+ *
+ * The AudioQueue volume is progressively decreased from 1 to 0.
+ *
+ * @param duration a double which represents the fade-in time span.
+ * @return nothing.
+ */
+- (void) fadeOutDuration:(double)duration;
+
 @end

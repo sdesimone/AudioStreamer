@@ -403,6 +403,7 @@ static void ASReadStreamCallBack(CFReadStreamRef aStream, CFStreamEventType even
     if ([self progress:&p]) {
         return [self seekToTime:p + seekTimeDelta];
     }
+    NSLog(@"COULD NOT SEEK");
     return NO;
 }
 
@@ -1302,6 +1303,28 @@ static void ASReadStreamCallBack(CFReadStreamRef aStream, CFStreamEventType even
     CFRelease(stream);
     stream = nil;
   }
+}
+
+- (BOOL) fadeTo:(double)volume duration:(double)duration {
+
+    if (audioQueue != NULL) {
+        AudioQueueSetParameter(audioQueue, kAudioQueueParam_VolumeRampTime, duration);
+        AudioQueueSetParameter(audioQueue, kAudioQueueParam_Volume, volume);
+        return YES;
+    }
+    return NO;
+}
+
+- (void) fadeInDuration:(double)duration {
+    
+    //-- set the gain to 0.0, so we can call this method just after creating the streamer
+    [self setVolume:0.0];
+    [self fadeTo:1.0 duration:duration];
+}
+
+- (void) fadeOutDuration:(double)duration {
+    
+    [self fadeTo:0.0 duration:duration];
 }
 
 @end
