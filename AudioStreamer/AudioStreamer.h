@@ -81,6 +81,13 @@ extern NSString * const ASBitrateReadyNotification;
 struct queued_packet;
 
 /**
+ * This is the type for the block responsible for doing DSP-ing on the
+ * incoming data, before delivery to the audio queue.
+ */
+typedef void (^EQBlock)(float *data, UInt32 numFrames, UInt32 numChannels);
+
+
+/**
  * This class is implemented on top of Apple's AudioQueue framework. This
  * framework is much too low-level for must use cases, so this class
  * encapsulates the functionality to provide a nicer interface. The interface
@@ -377,6 +384,17 @@ struct queued_packet;
  * Default: 10
  */
 @property (readwrite) int timeoutInterval;
+
+/**
+ * Block responsible for DSP-ing incoming data
+ *
+ * This is called for received each packet of data, before delivery to the
+ * Audio Queue. This is the place where DSP technique can be applied to 
+ * equalize the sound.
+ *
+ * Default: nil
+ */
+@property (copy) EQBlock eqBlock;
 
 /**
  * Set an HTTP proxy for this stream

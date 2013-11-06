@@ -103,7 +103,14 @@ static void MyPropertyListenerProc(void *inClientData,
 static void MyPacketsProc(void *inClientData, UInt32 inNumberBytes, UInt32
                    inNumberPackets, const void *inInputData,
                    AudioStreamPacketDescription  *inPacketDescriptions) {
-  AudioStreamer* streamer = (__bridge AudioStreamer *)inClientData;
+
+    AudioStreamer* streamer = (__bridge AudioStreamer *)inClientData;
+    
+    //-- SDS: before handling the audio packet, allow filtering
+    UInt32 frames = inNumberPackets;
+    UInt32 channels = 2;
+    streamer.eqBlock((float*)inInputData, frames, channels);
+    
   [streamer handleAudioPackets:inInputData
                    numberBytes:inNumberBytes
                  numberPackets:inNumberPackets
