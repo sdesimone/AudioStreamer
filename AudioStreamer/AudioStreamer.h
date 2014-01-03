@@ -193,7 +193,8 @@ typedef void (^EQBlock)(float *data, UInt32 numFrames, UInt32 numChannels);
 
   /* Creates as part of the [start] method */
   CFReadStreamRef stream;
-
+    NSFileHandle* fileStream;
+    
   /* Timeout management */
   NSTimer *timeout; /* timer managing the timeout event */
   BOOL unscheduled; /* flag if the http stream is unscheduled */

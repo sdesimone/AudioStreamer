@@ -73,6 +73,9 @@ NSString * const ASBitrateReadyNotification = @"ASBitrateReadyNotification";
 - (void)handleReadFromStream:(CFReadStreamRef)aStream
                    eventType:(CFStreamEventType)eventType;
 
+- (void)handleReadFromFileStreamNotification:(NSNotification*)notification;
+
+
 @end
 
 /* Woohoo, actual implementation now! */
@@ -271,6 +274,7 @@ static void ASReadStreamCallBack(CFReadStreamRef aStream, CFStreamEventType even
   assert(audioQueue == NULL);
   assert(state_ == AS_INITIALIZED);
   [self openReadStream];
+//    [self openFileReadStream];
   timeout = [NSTimer scheduledTimerWithTimeInterval:timeoutInterval
                                              target:self
                                            selector:@selector(checkTimeout)
@@ -586,6 +590,56 @@ static void ASReadStreamCallBack(CFReadStreamRef aStream, CFStreamEventType even
   return 0;
 }
 
+#pragma mark - Streaming from disk
+
+/**
+ * @brief Creates a new stream for reading audio data
+ *
+ * The stream is currently only compatible with remote HTTP sources. The stream
+ * opened could possibly be seeked into the middle of the file, or have other
+ * things like proxies attached to it.
+ *
+ * @return YES if the stream was opened, or NO if it failed to open
+ */
+- (BOOL)openFileReadStream {
+    
+    NSError* error = nil;
+//    fileStream = [NSFileHandle fileHandleForReadingFromURL:url error:&error];
+
+    NSString *resourcePath = [[NSBundle mainBundle] pathForResource:@"01_" ofType:@"mp3"];
+    NSURL* url2 = [NSURL URLWithString:resourcePath];
+    fileStream = [NSFileHandle fileHandleForReadingFromURL:url2 error:&error];
+//    fileStream.readabilityHandler = ^(NSFileHandle* fh) {
+//    
+//        NSLog(@"Handler called. Read %d bytes", [fh.availableData length]);
+//    };
+    
+    NSLog(@"ACCESSING FILE STREAM with error: %@", [error localizedDescription]);
+    
+    if (error) {
+        [self failWithErrorCode:AS_FILE_STREAM_OPEN_FAILED];
+        return NO;
+    }
+    
+    [self setState:AS_WAITING_FOR_DATA];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(handleReadFromFileStreamNotification:)
+                                                 name:NSFileHandleDataAvailableNotification
+                                               object:fileStream];
+
+    [fileStream waitForDataInBackgroundAndNotify];
+    
+    return YES;
+}
+
+- (void)handleReadFromFileStreamNotification:(NSNotification*)notification {
+    
+    NSFileHandle *fileHandle = (NSFileHandle*) [notification object];
+    NSLog(@"Read %d bytes", [fileHandle.availableData length]);
+}
+
+#pragma mark - Streaming from network
+
 /**
  * @brief Creates a new stream for reading audio data
  *
@@ -813,6 +867,8 @@ static void ASReadStreamCallBack(CFReadStreamRef aStream, CFStreamEventType even
     CHECK_ERR(err, AS_FILE_STREAM_PARSE_BYTES_FAILED);
   }
 }
+
+#pragma mark - 
 
 //
 // enqueueBuffer
