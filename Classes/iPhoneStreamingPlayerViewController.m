@@ -237,14 +237,17 @@
 {
 	if ([streamer isWaiting])
 	{
+        [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
 		[self setButtonImage:[UIImage imageNamed:@"loadingbutton.png"]];
 	}
 	else if ([streamer isPlaying])
 	{
+        [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
 		[self setButtonImage:[UIImage imageNamed:@"stopbutton.png"]];
 	}
 	else if ([streamer isDone])
 	{
+        [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
 		[self destroyStreamer];
 		[self setButtonImage:[UIImage imageNamed:@"playbutton.png"]];
 	}
